@@ -1,4 +1,4 @@
-const { Schema } = require('mongoose');
+const { model, Schema } = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const UserSchema = new Schema({
@@ -33,3 +33,6 @@ const UserSchema = new Schema({
 UserSchema.methods.comparePassword = (password, hashPassword) => {
     return bcrypt.compareSync(password, hashPassword);
 };
+
+const User = model('User', UserSchema);
+module.exports = User;

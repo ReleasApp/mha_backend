@@ -1,14 +1,14 @@
-import mongoose from 'mongoose';
-import { BlogSchema } from '../models/blog';
+const Blog = require('../models/blog');
 const cloudinary = require('../config/cloudinary');
 
-var Blog = mongoose.model('Blog', BlogSchema);
 
 // Create a blog
-export const addNewBlog = (req, res) => {
+exports.addNewBlog = async (req, res) => {
     let newBlog = new Blog(req.body);
-    // missing implement cloundinary and multer for image upload
-    newBlog.save((err, blog) => {
+    const result = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.blogImage, {quality: 60});
+    newBlog.blogImage = result.secure_url;
+    newBlog.blogImageId = result.public_id;
+    await newBlog.save((err, blog) => {
         if (err) {
             res.status(404).send(err);
         }
@@ -17,7 +17,7 @@ export const addNewBlog = (req, res) => {
 };
 
 // Return all blogs
-export const getBlogs = (req, res) => {
+exports.getBlogs = (req, res) => {
     Blog.find({}, (err, blogs) => {
         if (err) {
             res.status(404).send(err);
@@ -27,7 +27,7 @@ export const getBlogs = (req, res) => {
 };
 
 // update a blog
-export const updateBlog = (req, res) => {
+exports.updateBlog = (req, res) => {
     Blog.findOneAndUpdate({ _id: req.params.blogId}, req.body, { new: true }, (err, blog) => {
         // missing cloundinary update function
         if (err) {
@@ -38,12 +38,13 @@ export const updateBlog = (req, res) => {
 }
 
 // Delete a blog
-export const deleteBlog = (req, res) => {
-    Blog.findById(req.params.blogId, (err, blog) => {
+exports.deleteBlog = async (req, res) => {
+    await Blog.findById({_id: req.params.blogId}, (err, blog) => {
         if(err){
             res.status(404).send(err);
         } else {
-            cloundinary.destroy({where: {public_id: blog.blogImageId}}, (err, result)=>{
+            let public_id = blog.blogImageId;
+            cloudinary.uploader.destroy(public_id, (err, result)=>{
                 if(err) {
                     res.status(404).send('Failed to delete image from cloudinary');
                 }

@@ -1,12 +1,10 @@
 const { model } = require('mongoose');
-const { UserSchema } = require('../models/user');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cloudinary = require('../config/cloudinary');
 
-var User = model('User', UserSchema);
-
-export const loginRequired = (req, res, next) => {
+exports.loginRequired = (req, res, next) => {
     if (req.user) {
         next();
     } else {
@@ -14,7 +12,7 @@ export const loginRequired = (req, res, next) => {
     }
 }
 
-export const register = (req, res) => {
+exports.register = (req, res) => {
     const newUser = new User(req.body);
     newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
     newUser.save((err, user) => {
@@ -29,7 +27,7 @@ export const register = (req, res) => {
     })
 }
 
-export const login = (req,res) => {
+exports.login = (req,res) => {
     User.findOne({
         email: req.body.email
     }, (err, user) => {
@@ -47,7 +45,7 @@ export const login = (req,res) => {
 }
 
 // Set image
-export const uploadImage = (req, res) => {
+exports.uploadImage = (req, res) => {
     cloudinary.uploader.upload(req.file.path, {}, (err, result)=>{
         if(err) {
             console.log(err)

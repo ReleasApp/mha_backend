@@ -1,4 +1,4 @@
-const { Schema } = require('mongoose');
+const { model, Schema } = require('mongoose');
 
 const BlogSchema = new Schema({
     title: {
@@ -17,16 +17,16 @@ const BlogSchema = new Schema({
         type: String,
         required: 'Description is required'
     },
-    author: {
-        type: Schema.ObjectId
-    },
+    // author: {
+    //     type: Schema.ObjectId,
+    //     default: 1
+    // },
     createdAt: {
         type: Date,
         default: Date.now()
     }
 })
 
+const Blog = model('Blog', BlogSchema);
+module.exports = Blog;
 
-BlogSchema.path('title').set(function (v) {
-    return capitalize(v).trim();
-});

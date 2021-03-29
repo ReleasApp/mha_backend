@@ -23,7 +23,12 @@ const UserSchema = new Schema({
     hashPassword: {
         type: String,
         required: 'password is required'
-    }, 
+    },
+    role: {
+        type: String,
+        enum: ["Admin", "Patient", "Doctor"],
+        default: "Patient"
+    },
     createdAt: {
         type: Date,
         default: Date.now

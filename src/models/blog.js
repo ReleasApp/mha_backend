@@ -17,10 +17,10 @@ const BlogSchema = new Schema({
         type: String,
         required: 'Description is required'
     },
-    // author: {
-    //     type: Schema.ObjectId,
-    //     default: 1
-    // },
+    author: {
+        type: Schema.ObjectId,
+        ref: 'User'
+    },
     createdAt: {
         type: Date,
         default: Date.now()

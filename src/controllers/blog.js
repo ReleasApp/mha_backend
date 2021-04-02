@@ -4,12 +4,15 @@ const cloudinary = require('../config/cloudinary');
 
 // Create a blog
 exports.addNewBlog = async (req, res) => {
+    console.log(req);
     let newBlog = new Blog(req.body);
     const result = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.blogImage, {quality: 60});
+    newBlog.author = req.user._id;
     newBlog.blogImage = result.secure_url;
     newBlog.blogImageId = result.public_id;
     await newBlog.save((err, blog) => {
         if (err) {
+            console.log(err)
             res.status(404).send(err);
         }
         res.status(201).json(blog);

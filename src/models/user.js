@@ -15,10 +15,12 @@ const UserSchema = new Schema({
         required: 'Email is required'
     },
     userImage: {
-        type: String
+        type: String,
+        default: ""
     },
     userImageId: {
-        type: String
+        type: String,
+        default: ""
     },
     hashPassword: {
         type: String,

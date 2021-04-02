@@ -125,9 +125,8 @@ exports.uploadImage = async (req, res) => {
 
 exports.findUsers = async (req, res) => {
     try {
-        // const users = await User.find({role: 'Doctor'});
-        const users = await User.find();
-        res.status(200).json({users});
+        const users = await User.find({}, {hashPassword: 0})
+        res.status(200).json(users);
     } catch(err){
         res.send(err.message);
     }
@@ -137,3 +136,4 @@ exports.findUsers = async (req, res) => {
 // cloudinary.api.resource('kitten')
 //   .then(result => console.log(result))
 //   .catch(error => console.error(error));
+// {role: 'Patient'}

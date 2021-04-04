@@ -1,13 +1,3 @@
-# mha_backend
-
-{
-    "role": "Admin",
-    "firstName": "Isaac",
-    "lastName": "Ssemugenyi",
-    "email": "admin@admin.com",
-    "password": "Admin/2021"
-}
-
 => Doctor
     Appear on the chat list
     Can post info, hide create button for other
@@ -25,4 +15,3 @@
     Can view games screen
 
 // Doctor sign up screen
-    

@@ -50,7 +50,7 @@ app.use(`/`, require('./src/routes/blog'));
 // Sockets
 const chatSocket = io.of('/chatsocket');
 chatSocket.on("connection", async(socket) => {
-  console.log("New user connected with id " + socket.id);
+//   console.log("New user connected with id " + socket.id);
   try {
       await require('./src/routes/chat')(io, socket);
   } catch(error){

@@ -19,25 +19,25 @@ module.exports = (io, socket) => {
      */
     socket.on('get-previous-messages', async (data) => {
         try {
-            console.log(data);
             const receiverOrSender = await Chat.find({
-                // $and: [
-                //     {
-                        $or: [
+                $or: [
+                    {
+                        $and: [
                             {"user._id": user['senderId']}, 
                             {"user.receiverId": data.receiverId } 
                         ]
-                    // },
-                    // {
-                    //     $or : [
-                    //         {"user._id": data.receiverId}, 
-                    //         {"user.receiverId": user['senderId'] } 
-                    //     ]
-                    // }
-                // ]
+                    },
+                    {
+                        $and: [
+                            {"user._id": data.receiverId}, 
+                            {"user.receiverId": user['senderId'] } 
+                        ]
+                    }
+                ]
             });
             // console.log({receiverOrSender});
-            socket.emit('get-previous-messages', receiverOrSender);
+            const result = receiverOrSender.reverse();
+            socket.emit('get-previous-messages', result);
         } catch(err){
             console.log(err)
         } 

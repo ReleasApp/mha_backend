@@ -31,6 +31,11 @@ const UserSchema = new Schema({
         enum: ["Admin", "Patient", "Doctor"],
         default: "Patient"
     },
+    isApproved: {
+        type: String,
+        enum: ["Usual", "Not-Approved", "Approved"],
+        default: "Usual"
+    },
     createdAt: {
         type: Date,
         default: Date.now

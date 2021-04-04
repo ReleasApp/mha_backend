@@ -36,8 +36,7 @@ module.exports = (io, socket) => {
                     // }
                 // ]
             });
-            // console.log({receiverOrSender})
-            // io.of(chatSocket).to(user['senderId']).emit('get-previous-messages', receiverOrSender);
+            // console.log({receiverOrSender});
             socket.emit('get-previous-messages', receiverOrSender);
         } catch(err){
             console.log(err)

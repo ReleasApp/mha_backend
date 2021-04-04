@@ -52,7 +52,7 @@ const chatSocket = io.of('/chatsocket');
 chatSocket.on("connection", async(socket) => {
   console.log("New user connected with id " + socket.id);
   try {
-      await require('./src/routes/chat')(chatSocket, socket);
+      await require('./src/routes/chat')(io, socket);
   } catch(error){
       console.log(error);
   }

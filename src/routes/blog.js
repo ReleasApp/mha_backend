@@ -1,51 +1,26 @@
-const { 
-    addNewBlog, 
-    getBlogs, 
-    updateBlog,
-    deleteBlog 
-} = require('../controllers/blog');
-// const { login, register, loginRequired, uploadImage } = require('../controllers/user');
+var router = require('express').Router();
+
+const { addNewBlog, getBlogs, updateBlog, deleteBlog } = require('../controllers/blog');
+const { login, register, loginRequired, uploadImage, findUsers } = require('../controllers/user');
+const { addNewInfo, getInfos, deleteInfo } = require('../controllers/info');
 const upload = require('../config/multer');
 
-const routes = (app) => {
-    app.route('/blogs')
-    // get all blogs
-    .get((req, res, next) => {
-        next();
-    }, 
-    // loginRequired, 
-    getBlogs)
-    
-    // POST endpoint
-    .post(
-        // loginRequired, 
-        // upload.single('blogImage'), 
-        addNewBlog);
+// Blog section
+router.get('/blogs', loginRequired , getBlogs) 
+router.post('/blogs', loginRequired , addNewBlog);
+router.put('/blog/:blogId', loginRequired ,updateBlog);
+router.delete('/blog/:blogId',loginRequired , deleteBlog);
 
-    app.route('/blog/:blogId') 
-    // put request
-    .put(
-        // loginRequired, 
-        updateBlog)
+// Info section
+router.post('/infos', loginRequired, addNewInfo);
+router.get('/infos/:category', loginRequired, getInfos);
+router.delete('/info/:infoId', loginRequired, deleteInfo);
 
-    // delete request
-    .delete(
-        // loginRequired, 
-        deleteBlog);
+// User section
+router.post('/auth/register', register);
+router.post('/login', login);
+// router.put('/user/:userId', upload.single('userImage'), uploadImage);
+router.put('/user/:userId',loginRequired ,uploadImage);
+router.get('/users',loginRequired ,findUsers);
 
-    // registration route
-    // app.route('/auth/register')
-    //     .post(register);
-
-    // login route
-    // app.route('/login')
-    //     .post(login);
-
-    // upload image
-    // app.route('/user/:userId')
-    // // put request
-    // .put(loginRequired, upload.single('image'), uploadImage)
-
-}
-
-module.exports = routes;
+module.exports = router;

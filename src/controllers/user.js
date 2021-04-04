@@ -13,16 +13,25 @@ exports.loginRequired = (req, res, next) => {
 }
 
 exports.register = (req, res) => {
-    const newUser = new User(req.body);
-    newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
-    newUser.save((err, user) => {
-        if (err) {
-            return res.status(400).send({
-                message: err
-            });
-        } else {
-            user.hashPassword = undefined;
-            return res.json(user); 
+    User.findOne({
+        email: req.body.email
+    },(err, user)=>{
+        if (err) res.status(401).json({message: err.message});
+        if(user) {
+           return res.status(401).json({message: 'Email already registered, proceed to login'});
+        } else if(!user) {
+            const newUser = new User(req.body);
+            newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
+            newUser.save((err, user) => {
+                if (err) {
+                    return res.status(400).send({
+                        message: err
+                    });
+                } else {
+                    user.hashPassword = undefined;
+                    return res.status(201).json({message: 'You have been registered'}); 
+                }
+            })
         }
     })
 }
@@ -36,22 +45,95 @@ exports.login = (req,res) => {
             res.status(401).json({ message: 'Authentication failed. No user found'});
         } else if (user) {
             if (!user.comparePassword(req.body.password, user.hashPassword)) {
-                res.status(401).json({ message: 'Authentication failed. Wrong password'});
+                res.status(401).json({ message: 'Authentication failed. Wrong password or User Name'});
             } else {
-                return res.json({token: jwt.sign({ email: user.email, firstName: user.firstName, _id: user.id}, process.env.SECRET_KEY)});
+                return res.json({
+                    userId: user.id,
+                    firstName: user.firstName,
+                    role: user.role,
+                    imageUrl: user.userImage,
+                    token: jwt.sign({ email: user.email, firstName: user.firstName, _id: user.id}, process.env.SECRET_KEY),
+                });
             }
         }
     });
 }
 
 // Set image
-exports.uploadImage = (req, res) => {
-    cloudinary.uploader.upload(req.file.path, {}, (err, result)=>{
-        if(err) {
-            console.log(err)
-        } else {
-            User.findById({ _id: req.params.blogId}, )
-            // newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
+exports.uploadImage = async (req, res) => {
+    try {
+        // find user in db with user id
+        const userToUpdateImage = await User.findById({ _id: req.params.userId});
+        // Return user image public id
+        if((userToUpdateImage.hasOwnProperty('userImageId')) === true){
+            if(
+                userToUpdateImage.userImageId != "" || 
+                userToUpdateImage.userImageId != null || 
+                userToUpdateImage.userImageId != undefined
+            ) {
+                // Destroy exisiting image from cloudinary
+                const public_id = userToUpdateImage.userImageId;
+                cloudinary.uploader.destroy(public_id, (err, result)=>{
+                    if(err) {
+                        res.status(404).send('Failed to update image from cloudinary' + err.message);
+                    }
+                    if (result) {
+                        // OnDestroy, upload new uploaded image
+                        const userImageUpdate = cloudinary.uploader.upload("data:image/jpg;base64," + req.body.userImage, {quality: 60});
+                        // Find document from db and update image url and image public id
+                        User.findByIdAndUpdate(
+                            { _id: req.params.userId}, 
+                            {
+                                userImage : userImageUpdate.secure_url, 
+                                userImageId: userImageUpdate.public_id
+                            }, 
+                            { new: true }, (err, user) => {
+                                // missing cloundinary update function
+                                if (err) {
+                                    res.status(404).send(err);
+                                }
+                                res.status(200).send("Updated successfully after deletion");
+                                return;
+                            })
+                    }
+                })
+
+            } 
+        }   else {
+            // if false, just upload new image
+            const userImageUpdate = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.image, {quality: 60});
+            // const userImageUpdate = await cloudinary.uploader.upload(req.file.path, {quality: 60});
+            // Find document from db and update image url and image public id
+            await User.findByIdAndUpdate(
+                { _id: req.params.userId}, 
+                {
+                    userImage : userImageUpdate.secure_url, 
+                    userImageId: userImageUpdate.public_id
+                }, 
+                { new: true }, (err, user) => {
+                    // missing cloundinary update function
+                    if (err) {
+                        res.status(404).send(err);
+                    }
+                    res.status(200).send("Updated successfully at one time");
+                })
         }
-    })
+    } catch(err){
+        console.log(err)
+    }
 }
+
+exports.findUsers = async (req, res) => {
+    try {
+        const users = await User.find({}, {hashPassword: 0})
+        res.status(200).json(users);
+    } catch(err){
+        res.send(err.message);
+    }
+}
+
+// TO check if public id exisits  in cloudinary
+// cloudinary.api.resource('kitten')
+//   .then(result => console.log(result))
+//   .catch(error => console.error(error));
+// {role: 'Patient'}

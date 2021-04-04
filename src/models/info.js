@@ -1,21 +1,17 @@
 const { model, Schema } = require('mongoose');
 
-const BlogSchema = new Schema({
+const InfoSchema = new Schema({
     title: {
         type: String,
         required: 'Title is required'
-    }, 
-    blogImage: {
-        type: String,
-        required: 'Image is required'
     },
-    blogImageId: {
+    category: {
         type: String,
-        required: 'Image is required'
+        required: 'Category is required'
     },
-    description: {
+    link: {
         type: String,
-        required: 'Description is required'
+        required: 'Link is required'
     },
     author: {
         type: Schema.ObjectId,
@@ -27,6 +23,6 @@ const BlogSchema = new Schema({
     }
 })
 
-const Blog = model('Blog', BlogSchema);
-module.exports = Blog;
+const Info = model('Info', InfoSchema);
+module.exports = Info;
 

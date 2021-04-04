@@ -1,25 +1,31 @@
 const { model , Schema } = require('mongoose');
 
+const ChatUserSchema = new Schema({
+    avatar: {
+        type: String
+    },
+    _id: {
+        type: String,
+        required: true
+    },
+    name: String
+    ,
+    receiverId: {
+        type: String,
+        required: true
+    }
+})
+
 const ChatSchema = new Schema({
     _id: String,
     text: String,
     createdAt: Date,
     user: {
-        image: {
-            type: String,
-            required: true
-        },
-        senderId: {
-            type: String,
-            required: true
-        },
-        receiverId: {
-            type: String,
-            required: true
-        }
+       type: ChatUserSchema,
+       required: true
     }
 })
 
-var Chat = mongoose.model('Chat', ChatSchema);
+const Chat = model('Chat', ChatSchema);
 module.exports = Chat;
 

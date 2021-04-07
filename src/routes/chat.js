@@ -1,17 +1,15 @@
-const mongoose = require('mongoose');
+let users =  [];
 
 module.exports = (io, socket) => {
-    const Chat = require('../models/chat');
-
-    let user =  {};
+    const Chat = require('../models/chat')
 
     /**
      *  ON CONNECT
      */
     socket.on('has-connected', (data) => {
-        socket.id = data.senderId;
-        user['senderId'] = socket.id;
-        console.log(socket.id)
+        users.push(socket.id);
+        socket.broadcast.emit('my-id', socket.id);
+        console.log(users);
     })
 
     /**
@@ -19,23 +17,23 @@ module.exports = (io, socket) => {
      */
     socket.on('get-previous-messages', async (data) => {
         try {
+            console.log('in get messages',data)
             const receiverOrSender = await Chat.find({
                 $or: [
                     {
                         $and: [
-                            {"user._id": user['senderId']}, 
+                            {"user._id": data.senderId}, 
                             {"user.receiverId": data.receiverId } 
                         ]
                     },
                     {
                         $and: [
                             {"user._id": data.receiverId}, 
-                            {"user.receiverId": user['senderId'] } 
+                            {"user.receiverId": data.senderId } 
                         ]
                     }
                 ]
             });
-            // console.log({receiverOrSender});
             const result = receiverOrSender.reverse();
             socket.emit('get-previous-messages', result);
         } catch(err){
@@ -48,8 +46,8 @@ module.exports = (io, socket) => {
      */
     socket.on('new_message', async (data) => {
         try {
+            await socket.to(data.user.receiverId).emit('private-msg', data);
             await Chat.create(data);
-            await socket.to(data.receiverId).emit(data);
             console.log(data);
         } catch(err){
             console.log(err);

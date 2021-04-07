@@ -1,16 +1,7 @@
-const { model } = require('mongoose');
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cloudinary = require('../config/cloudinary');
-
-exports.loginRequired = (req, res, next) => {
-    if (req.user) {
-        next();
-    } else {
-        return res.status(401).json({ message: 'Unauthorized user!'});
-    }
-}
 
 exports.register = (req, res) => {
     User.findOne({
@@ -51,8 +42,9 @@ exports.login = (req,res) => {
                     userId: user.id,
                     firstName: user.firstName,
                     role: user.role,
+                    isApproved: user.isApproved,
                     imageUrl: user.userImage,
-                    token: jwt.sign({ email: user.email, firstName: user.firstName, _id: user.id}, process.env.SECRET_KEY),
+                    token: jwt.sign({ email: user.email, firstName: user.firstName, role: user.role, _id: user.id}, process.env.SECRET_KEY),
                 });
             }
         }
@@ -127,6 +119,37 @@ exports.findUsers = async (req, res) => {
     try {
         const users = await User.find({}, {hashPassword: 0})
         res.status(200).json(users);
+    } catch(err){
+        res.send(err.message);
+    }
+}
+
+// Doctors to pending approval
+exports.findAllDocsToApprove = async (req, res) => {
+    try {
+        const doctorsToApprove = await User.find(
+            {
+                role: 'Doctor', 
+                isApproved: 'Usual'
+            }, 
+            {
+                hashPassword: 0
+            })
+        res.status(200).json(doctorsToApprove);
+    } catch(err){
+        res.send(err.message);
+    }
+}
+
+// Update doctor approved status
+exports.approveDoctor = async (req, res) => {
+    try {
+        const currentDoctor = await User.findByIdAndUpdate(
+            { _id: req.params.userId}, 
+            {isApproved : req.body.isApproved}, 
+            { new: true }
+        )
+        res.status(200).json(currentDoctor);
     } catch(err){
         res.send(err.message);
     }

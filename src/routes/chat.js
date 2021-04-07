@@ -50,7 +50,7 @@ module.exports = (io, socket) => {
         try {
             await Chat.create(data);
             await socket.to(data.receiverId).emit(data);
-            console.log(data)
+            console.log(data);
         } catch(err){
             console.log(err);
         }

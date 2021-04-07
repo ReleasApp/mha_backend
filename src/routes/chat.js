@@ -6,6 +6,13 @@ module.exports = (io, socket) => {
     /**
      *  ON CONNECT
      */
+
+
+
+
+
+
+    
     socket.on('has-connected', (data) => {
         users.push(socket.id);
         socket.broadcast.emit('my-id', socket.id);

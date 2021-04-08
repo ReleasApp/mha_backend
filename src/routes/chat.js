@@ -20,10 +20,10 @@ module.exports = (io, socket) => {
         socket.join(updatedRoomName);
 
         socket.on('emitMessage', async (message) => {
+            await Chat.create(message);
             await Array.from(socket.rooms)
                 .filter(it => it !== socket.id)
                 .forEach(id => {
-                    Chat.create(message);
                     socket.to(id).emit('onMessage', message)
             });
         });

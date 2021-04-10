@@ -7,13 +7,6 @@ module.exports = (io, socket) => {
      *  ON CONNECT
      */
     socket.on('join', data => {
-        // Check if receiver is online
-        for(let i = 0; i < users.length; i++ ){
-            if(users[i].userId === data.receiverId){
-            socket.emit('online', {status: 'online', user: users[i].userId});
-            }
-        }
-
         const index = users.findIndex(el => el.userId === data.senderId);
         const found = users.some(el => el.userId === data.senderId);
         if (!found) return users.push({userId: data.senderId, socketId: socket.id});
@@ -26,7 +19,7 @@ module.exports = (io, socket) => {
     socket.on('disconnect', () => {
         for(let i = 0; i < users.length; i++ ){
           if(users[i].socketId === socket.id){
-            socket.broadcast.emit('offline', {status: 'offline', user: users[i].userId});
+            // socket.broadcast.emit('offline', {status: 'offline', user: users[i].userId});
             users.splice(i, 1);
           }
         }
@@ -64,7 +57,9 @@ module.exports = (io, socket) => {
      * NEW MESSAGE
      */
     socket.on('new_message', (data) => {
+        // console.log(users);
         Chat.create(data);
+        // console.log(data);
         const index = users.findIndex(el => el.userId === data.user.receiverId);
         const found = users.some(el => el.userId === data.user.receiverId);
         if(found) socket.to(users[index].socketId).emit('private-message', data);      

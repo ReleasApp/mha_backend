@@ -1,55 +1,42 @@
+let users = [];
+
 module.exports = (io, socket) => {
     const Chat = require('../models/chat')
 
     /**
      *  ON CONNECT
      */
-    // creating a room name that's unique using both user's unique username
-    socket.on('join', roomName => {
-        let split = roomName.split('--with--') //['senderId', 'receiverId']
-        let unique = [...new Set(split)].sort((a, b) => (a < b ? -1 : 1)); //['senderId', 'receiverId']
-        let updatedRoomName = `${unique[0]}--with--${unique[1]}`; // 'username1--with--username2'
+    socket.on('join', data => {
+        // Check if receiver is online
+        for(let i = 0; i < users.length; i++ ){
+            if(users[i].userId === data.receiverId){
+            socket.emit('online', {status: 'online', user: users[i].userId});
+            }
+        }
 
-        Array.from(socket.rooms)
-            .filter(it => it !== socket.id)
-            .forEach(id => {
-                socket.leave(id);
-                socket.removeAllListeners('emitMessage');
-            });
-
-        socket.join(updatedRoomName);
-
-        socket.on('emitMessage', async (message) => {
-            await Chat.create(message);
-            await Array.from(socket.rooms)
-                .filter(it => it !== socket.id)
-                .forEach(id => {
-                    socket.to(id).emit('onMessage', message)
-            });
-        });
+        const index = users.findIndex(el => el.userId === data.senderId);
+        const found = users.some(el => el.userId === data.senderId);
+        if (!found) return users.push({userId: data.senderId, socketId: socket.id});
+        if(found) return users[index].socketId = socket.id;
     });
 
-    socket.on('disconnect', ()=>{
-        socket.removeAllListeners();
+    /**
+     * ON DISCONNECT
+     */ 
+    socket.on('disconnect', () => {
+        for(let i = 0; i < users.length; i++ ){
+          if(users[i].socketId === socket.id){
+            socket.broadcast.emit('offline', {status: 'offline', user: users[i].userId});
+            users.splice(i, 1);
+          }
+        }
     })
-
-
-
-
-
-    
-    // socket.on('has-connected', (data) => {
-    //     users.push(socket.id);
-    //     socket.broadcast.emit('my-id', socket.id);
-    //     console.log(users);
-    // })
-
+ 
     /**
      * GET PREVIOUS MESSAGES 
      */
     socket.on('get-previous-messages', async (data) => {
         try {
-            console.log('in get messages',data)
             const receiverOrSender = await Chat.find({
                 $or: [
                     {
@@ -76,13 +63,10 @@ module.exports = (io, socket) => {
     /**
      * NEW MESSAGE
      */
-    // socket.on('new_message', async (data) => {
-    //     try {
-    //         await socket.to(data.user.receiverId).emit('private-msg', data);
-    //         await Chat.create(data);
-    //         console.log(data);
-    //     } catch(err){
-    //         console.log(err);
-    //     }
-    // })
+    socket.on('new_message', (data) => {
+        Chat.create(data);
+        const index = users.findIndex(el => el.userId === data.user.receiverId);
+        const found = users.some(el => el.userId === data.user.receiverId);
+        if(found) socket.to(users[index].socketId).emit('private-message', data);      
+    });
 }

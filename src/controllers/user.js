@@ -44,7 +44,7 @@ exports.login = (req,res) => {
                     role: user.role,
                     isApproved: user.isApproved,
                     imageUrl: user.userImage,
-                    token: jwt.sign({ email: user.email, firstName: user.firstName, role: user.role, _id: user.id}, process.env.SECRET_KEY),
+                    token: jwt.sign({ email: user.email, firstName: user.firstName, isApproved: user.isApproved, role: user.role, _id: user.id}, process.env.SECRET_KEY),
                 });
             }
         }

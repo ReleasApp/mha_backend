@@ -2,7 +2,7 @@ exports.loginRequired = (req, res, next) => {
     if (req.user) {
         next();
     } else {
-        return res.status(401).json({ message: 'Unauthorized user!'});
+        return res.status(401).json({ message: 'This resource required logging in!'});
     }
 };
 
@@ -14,7 +14,7 @@ exports.checkDocValidate = (req, res, next) => {
     ){
         next();
     } else {
-        return res.status(401).json({ message: 'Please doctor wait to be approved by Admin!'});
+        return res.status(401).json({ message: 'You need to be an Approved Doctor to access this resource!'});
     }
 }
 

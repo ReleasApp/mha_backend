@@ -3,28 +3,22 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cloudinary = require('../config/cloudinary');
 
-exports.register = (req, res) => {
-    User.findOne({
-        email: req.body.email
-    },(err, user)=>{
-        if (err) res.status(401).json({message: err.message});
-        if(user) {
-           return res.status(401).json({message: 'Email already registered, proceed to login'});
-        } else if(!user) {
-            const newUser = new User(req.body);
-            newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
-            newUser.save((err, user) => {
-                if (err) {
-                    return res.status(400).send({
-                        message: err
-                    });
-                } else {
-                    user.hashPassword = undefined;
-                    return res.status(201).json({message: 'You have been registered'}); 
-                }
-            })
-        }
-    })
+exports.register = async(req, res) => {
+    try {
+        const foundUser = await User.findOne({email: req.body.email});
+        if(foundUser) return res.status(401).json({message: 'Email already registered, proceed to login'});
+        const newUser = new User(req.body);
+        const result = await cloudinary.uploader.upload(req.file.path, {quality: 60});
+        // const result = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.profileImage, {quality: 60});
+        newUser.hashPassword = await bcrypt.hashSync(req.body.password, 10);
+        newUser.userImage = result.secure_url;
+        newUser.userImageId = result.public_id;
+        const savedUser = await newUser.save();
+        savedUser.hashPassword = undefined;
+        return res.status(201).json({message: 'You have been registered'}); 
+    } catch (error) {
+        res.status(400).json({message: error});
+    }
 }
 
 exports.login = (req,res) => {

@@ -14,13 +14,33 @@ exports.addNewBlog = async (req, res) => {
             console.log(err)
             res.status(404).send(err);
         }
-        res.status(201).json(blog);
+        res.status(201).json({message: "Blog created and will be reviewed by a doctor soon"});
     });
+};
+
+// Return blogs to be approved by doctor
+exports.getAllBlogsToApprove = (req, res) => {
+    Blog.find({blogStatus: "New"}, (err, blogs) => {
+        if (err) {
+            res.status(404).send(err);
+        }
+        res.status(200).json(blogs);
+    })
+};
+
+// Approve single user blog
+exports.approveSingleUserBlog = (req, res) => {
+    Blog.findOneAndUpdate({ _id: req.params.blogId}, {blogStatus: req.body.blogStatus}, { new: true }, (err, blog) => {
+        if (err) {
+            res.status(404).send(err);
+        }
+        res.status(200).json(blog);
+    })
 };
 
 // Return all blogs
 exports.getBlogs = (req, res) => {
-    Blog.find({}, (err, blogs) => {
+    Blog.find({blogStatus: "Approved"}, (err, blogs) => {
         if (err) {
             res.status(404).send(err);
         }

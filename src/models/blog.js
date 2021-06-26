@@ -9,6 +9,11 @@ const BlogSchema = new Schema({
         type: String,
         required: 'Image is required'
     },
+    blogStatus: {
+        type: String,
+        enum: ["New", "Approved", "Declined"],
+        default: "New"
+    },
     blogImageId: {
         type: String,
         required: 'Image is required'

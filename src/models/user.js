@@ -16,7 +16,7 @@ const UserSchema = new Schema({
     },
     userImage: {
         type: String,
-        default: ""
+        required: 'User profile image is required'
     },
     userImageId: {
         type: String,

@@ -7,16 +7,16 @@ exports.register = (req, res) => {
     User.findOne({
         email: req.body.email
     },(err, user)=>{
-        if (err) res.status(401).json({message: err.message});
+        if (err) res.status(401).json({message: 'Something went wrong'});
         if(user) {
-           return res.status(401).json({message: 'Email already registered, proceed to login'});
+           return res.status(401).json({message: 'Email already registered'});
         } else if(!user) {
             const newUser = new User(req.body);
             newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
             newUser.save((err, user) => {
                 if (err) {
-                    return res.status(400).send({
-                        message: err
+                    return res.status(400).json({
+                        message: "User saving failed"
                     });
                 } else {
                     user.hashPassword = undefined;
@@ -38,7 +38,7 @@ exports.login = (req,res) => {
             if (!user.comparePassword(req.body.password, user.hashPassword)) {
                 res.status(401).json({ message: 'Authentication failed. Wrong password or User Name'});
             } else {
-                return res.json({
+                return res.status(200).json({
                     userId: user.id,
                     firstName: user.firstName,
                     role: user.role,

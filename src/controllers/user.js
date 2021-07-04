@@ -7,7 +7,7 @@ exports.register = (req, res) => {
     User.findOne({
         email: req.body.email
     },(err, user)=>{
-        if (err) res.status(401).json({message: 'Something went wrong'});
+        if (err) return res.status(401).json({message: 'Something went wrong'});
         if(user) {
            return res.status(401).json({message: 'Email already registered'});
         } else if(!user) {
@@ -15,9 +15,7 @@ exports.register = (req, res) => {
             newUser.hashPassword = bcrypt.hashSync(req.body.password, 10);
             newUser.save((err, user) => {
                 if (err) {
-                    return res.status(400).json({
-                        message: "User saving failed"
-                    });
+                    return res.status(400).json({message: "User saving failed"});
                 } else {
                     user.hashPassword = undefined;
                     return res.status(201).json({message: 'You have been registered'}); 

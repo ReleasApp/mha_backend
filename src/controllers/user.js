@@ -8,8 +8,8 @@ exports.register = async(req, res) => {
         const foundUser = await User.findOne({email: req.body.email});
         if(foundUser) return res.status(401).json({message: 'Email already registered, proceed to login'});
         const newUser = new User(req.body);
-        const result = await cloudinary.uploader.upload(req.file.path, {quality: 60});
-        // const result = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.profileImage, {quality: 60});
+        // const result = await cloudinary.uploader.upload(req.file.path, {quality: 60});
+        const result = await cloudinary.uploader.upload("data:image/jpg;base64," + req.body.profileImage, {quality: 60});
         newUser.hashPassword = await bcrypt.hashSync(req.body.password, 10);
         newUser.userImage = result.secure_url;
         newUser.userImageId = result.public_id;

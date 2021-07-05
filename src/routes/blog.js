@@ -16,7 +16,8 @@ router.put('/blog/:blogId', loginRequired ,updateBlog);
 router.delete('/blog/:blogId',loginRequired , deleteBlog);
 
 // Info section changec to Doc info section
-router.post('/infos', loginRequired, checkDocValidate, upload.single('docInfoImage'), addNewDocInfo);
+// router.post('/infos', loginRequired, checkDocValidate, upload.single('docInfoImage'), addNewDocInfo);
+router.post('/infos', loginRequired, checkDocValidate, addNewDocInfo);
 router.get('/infos/:category', loginRequired, getDocInfos);
 router.delete('/info/:infoId', loginRequired, checkDocValidate, deleteDocInfo);
 
